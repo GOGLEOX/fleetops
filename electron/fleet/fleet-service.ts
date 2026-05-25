@@ -7,10 +7,14 @@ import type {
   UpdateTruckInput,
 } from '../../src/lib/fleet/contracts'
 import type {
-  MaintenanceRuleRecord,
   TruckRecord,
 } from '../../src/lib/persistence/contracts'
 import type { SessionTrackingService } from '../session/session-tracking-service'
+import {
+  evaluateTruckMaintenanceStatuses,
+  hasMaintenanceAttention,
+  summarizeMaintenanceLabel,
+} from '../../src/lib/maintenance/evaluation'
 
 export class FleetService {
   private readonly repositories: FleetOpsRepositories
@@ -68,6 +72,7 @@ export class FleetService {
         netProfitCents: summary.netProfitCents,
         maintenanceDue: summary.maintenanceDue,
         maintenanceDueLabel: summary.maintenanceDueLabel,
+        maintenanceStatuses: summary.maintenanceStatuses,
       },
     }
   }
@@ -103,20 +108,20 @@ export class FleetService {
       0,
     )
 
-    const maintenanceDueLabel = computeMaintenanceDueLabel(
+    const maintenanceStatuses = evaluateTruckMaintenanceStatuses(
       truck,
-      maintenanceEvents,
       maintenanceRules,
+      maintenanceEvents,
     )
+    const maintenanceDueLabel = summarizeMaintenanceLabel(maintenanceStatuses)
 
     return {
       truck,
       avgMpg,
       lastSeenLabel: formatRelativeDate(truck.lastSeenAt),
-      maintenanceDue:
-        maintenanceDueLabel !== 'No active maintenance rules' &&
-        maintenanceDueLabel !== 'No due items',
+      maintenanceDue: hasMaintenanceAttention(maintenanceStatuses),
       maintenanceDueLabel,
+      maintenanceStatuses,
       netProfitCents,
     }
   }
@@ -125,30 +130,4 @@ export class FleetService {
 function formatRelativeDate(timestamp: string): string {
   const date = new Date(timestamp)
   return Number.isNaN(date.getTime()) ? '--' : date.toLocaleString()
-}
-
-function computeMaintenanceDueLabel(
-  truck: TruckRecord,
-  maintenanceEvents: Array<{ ruleId: string | null; odometerMi: number }>,
-  rules: MaintenanceRuleRecord[],
-): string {
-  const enabledRules = rules.filter((rule) => rule.enabled)
-  if (enabledRules.length === 0) {
-    return 'No active maintenance rules'
-  }
-
-  const odometerMi = truck.currentOdometerMi ?? truck.startingOdometerMi ?? 0
-  const dueLabels: string[] = []
-
-  for (const rule of enabledRules) {
-    const latestEvent = maintenanceEvents.find((event) => event.ruleId === rule.id)
-    const baselineMiles = latestEvent?.odometerMi ?? truck.startingOdometerMi ?? 0
-    const milesSince = odometerMi - baselineMiles
-
-    if (milesSince >= rule.intervalMiles) {
-      dueLabels.push(rule.name)
-    }
-  }
-
-  return dueLabels.length > 0 ? dueLabels.join(', ') : 'No due items'
 }

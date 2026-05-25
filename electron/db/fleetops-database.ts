@@ -96,11 +96,17 @@ export class FleetOpsDatabase {
   private seedMaintenanceRules(): void {
     const insertRule = this.database.prepare(
       `
-        INSERT OR IGNORE INTO maintenance_rules (
+        INSERT INTO maintenance_rules (
           id, name, interval_miles, interval_engine_hours, enabled,
           created_at, updated_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          name = excluded.name,
+          interval_miles = excluded.interval_miles,
+          interval_engine_hours = excluded.interval_engine_hours,
+          enabled = excluded.enabled,
+          updated_at = excluded.updated_at
       `,
     )
 

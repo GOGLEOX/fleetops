@@ -5,6 +5,7 @@ import type {
   TripRecord,
   TruckRecord,
 } from '../persistence/contracts'
+import type { TruckMaintenanceStatus } from '../maintenance/contracts'
 
 export interface RegisterDetectedTruckInput {
   truckId: string
@@ -32,6 +33,7 @@ export interface FleetTruckSummary {
   lastSeenLabel: string
   maintenanceDue: boolean
   maintenanceDueLabel: string
+  maintenanceStatuses: TruckMaintenanceStatus[]
   netProfitCents: number
 }
 
@@ -51,6 +53,7 @@ export interface FleetTruckDetail {
     netProfitCents: number
     maintenanceDue: boolean
     maintenanceDueLabel: string
+    maintenanceStatuses: TruckMaintenanceStatus[]
   }
 }
 

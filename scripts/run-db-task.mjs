@@ -15,6 +15,7 @@ const taskScriptMap = {
   smoke: 'db-smoke.ts',
   session: 'session-smoke.ts',
   garage: 'garage-smoke.ts',
+  maintenance: 'maintenance-smoke.ts',
 }
 
 const taskScript = taskScriptMap[taskName]

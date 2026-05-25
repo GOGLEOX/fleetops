@@ -12,6 +12,7 @@ import {
 } from './session/app-session'
 import { initializeFleetService } from './fleet/app-fleet'
 import { initializeGarageService } from './garages/app-garages'
+import { initializeMaintenanceService } from './maintenance/app-maintenance'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -49,6 +50,7 @@ app.whenReady().then(async () => {
   const sessionTrackingService = await initializeSessionTrackingService()
   const fleetService = initializeFleetService()
   const garageService = initializeGarageService()
+  const maintenanceService = initializeMaintenanceService()
 
   ipcMain.handle('fleetops:get-database-health', () => database.getHealth())
   ipcMain.handle('fleetops:get-telemetry-snapshot', () =>
@@ -128,6 +130,34 @@ app.whenReady().then(async () => {
       tripId: string
       garageId: string | null
     }) => garageService.assignTrip(input),
+  )
+  ipcMain.handle('fleetops:get-maintenance-snapshot', () =>
+    maintenanceService.getSnapshot(),
+  )
+  ipcMain.handle('fleetops:get-truck-maintenance-detail', (_, truckId: string) =>
+    maintenanceService.getTruckDetail(truckId),
+  )
+  ipcMain.handle(
+    'fleetops:save-maintenance-rule',
+    (_, input: {
+      ruleId?: string
+      name: string
+      intervalMiles: number
+      intervalEngineHours: number | null
+      enabled: boolean
+    }) => maintenanceService.saveRule(input),
+  )
+  ipcMain.handle(
+    'fleetops:log-maintenance-event',
+    (_, input: {
+      truckId: string
+      ruleId: string | null
+      performedAt: string
+      odometerMi: number
+      engineHours: number | null
+      costCents: number | null
+      notes: string | null
+    }) => maintenanceService.logMaintenanceEvent(input),
   )
 
   telemetryService.subscribeState((snapshot) => {

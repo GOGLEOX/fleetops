@@ -13,6 +13,13 @@ import type {
   GarageUpsertInput,
 } from './lib/garages/contracts'
 import type {
+  MaintenanceEventInput,
+  MaintenanceRuleInput,
+  MaintenanceSnapshot,
+  TruckMaintenanceDetail,
+} from './lib/maintenance/contracts'
+import type { MaintenanceRuleRecord } from './lib/persistence/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -46,6 +53,16 @@ declare global {
     assignTripToGarage: (
       input: AssignTripToGarageInput,
     ) => Promise<GarageDetail | null>
+    getMaintenanceSnapshot: () => Promise<MaintenanceSnapshot>
+    getTruckMaintenanceDetail: (
+      truckId: string,
+    ) => Promise<TruckMaintenanceDetail | null>
+    saveMaintenanceRule: (
+      input: MaintenanceRuleInput,
+    ) => Promise<MaintenanceRuleRecord | null>
+    logMaintenanceEvent: (
+      input: MaintenanceEventInput,
+    ) => Promise<TruckMaintenanceDetail | null>
     onTelemetryState: (
       callback: (snapshot: TelemetryServiceSnapshot) => void,
     ) => () => void

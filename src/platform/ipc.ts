@@ -13,6 +13,13 @@ import type {
   GarageUpsertInput,
 } from '../lib/garages/contracts'
 import type {
+  MaintenanceEventInput,
+  MaintenanceRuleInput,
+  MaintenanceSnapshot,
+  TruckMaintenanceDetail,
+} from '../lib/maintenance/contracts'
+import type { MaintenanceRuleRecord } from '../lib/persistence/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -221,4 +228,42 @@ export async function assignTripToGarage(
   }
 
   return window.fleetops.assignTripToGarage(input)
+}
+
+export async function getMaintenanceSnapshot(): Promise<MaintenanceSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getMaintenanceSnapshot()
+}
+
+export async function getTruckMaintenanceDetail(
+  truckId: string,
+): Promise<TruckMaintenanceDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getTruckMaintenanceDetail(truckId)
+}
+
+export async function saveMaintenanceRule(
+  input: MaintenanceRuleInput,
+): Promise<MaintenanceRuleRecord | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.saveMaintenanceRule(input)
+}
+
+export async function logMaintenanceEvent(
+  input: MaintenanceEventInput,
+): Promise<TruckMaintenanceDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.logMaintenanceEvent(input)
 }
