@@ -6,20 +6,27 @@
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "electron ."
+    "start": "electron .",
+    "db:health": "node scripts/run-db-task.mjs health",
+    "db:seed": "node scripts/run-db-task.mjs seed",
+    "db:smoke": "node scripts/run-db-task.mjs smoke"
   },
   "dependencies": {
+    "better-sqlite3": "^12.4.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.9.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@electron/rebuild": "^4.0.1",
     "@tailwindcss/vite": "^4.1.13",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -30,6 +37,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "tailwindcss": "^4.1.13",
+    "tsx": "^4.20.6",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",

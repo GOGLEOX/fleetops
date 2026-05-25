@@ -15,6 +15,7 @@ dist-electron
 *.db
 *.db-shm
 *.db-wal
+.fleetops/
 
 # Editor directories and files
 .vscode/*
