@@ -18,6 +18,12 @@ contextBridge.exposeInMainWorld('fleetops', {
     ipcRenderer.invoke('fleetops:ignore-pending-truck', truckId),
   deferPendingTruck: (truckId: string) =>
     ipcRenderer.invoke('fleetops:defer-pending-truck', truckId),
+  getFleetSnapshot: () => ipcRenderer.invoke('fleetops:get-fleet-snapshot'),
+  getTruckDetail: (truckId: string) =>
+    ipcRenderer.invoke('fleetops:get-truck-detail', truckId),
+  registerDetectedTruck: (input: unknown) =>
+    ipcRenderer.invoke('fleetops:register-detected-truck', input),
+  updateTruck: (input: unknown) => ipcRenderer.invoke('fleetops:update-truck', input),
   onTelemetryState: (callback: (snapshot: unknown) => void) => {
     const listener = (_event: unknown, snapshot: unknown) => {
       callback(snapshot)

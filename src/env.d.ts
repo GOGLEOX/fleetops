@@ -1,5 +1,11 @@
 import type { DatabaseHealth } from './lib/persistence/contracts'
 import type {
+  FleetSnapshot,
+  FleetTruckDetail,
+  RegisterDetectedTruckInput,
+  UpdateTruckInput,
+} from './lib/fleet/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -18,6 +24,12 @@ declare global {
     registerPendingTruck: (truckId: string) => Promise<SessionTrackingSnapshot>
     ignorePendingTruck: (truckId: string) => Promise<SessionTrackingSnapshot>
     deferPendingTruck: (truckId: string) => Promise<SessionTrackingSnapshot>
+    getFleetSnapshot: () => Promise<FleetSnapshot>
+    getTruckDetail: (truckId: string) => Promise<FleetTruckDetail | null>
+    registerDetectedTruck: (
+      input: RegisterDetectedTruckInput,
+    ) => Promise<FleetTruckDetail | null>
+    updateTruck: (input: UpdateTruckInput) => Promise<FleetTruckDetail | null>
     onTelemetryState: (
       callback: (snapshot: TelemetryServiceSnapshot) => void,
     ) => () => void

@@ -63,6 +63,14 @@ export class TripsRepository {
     return row ? mapTripRow(row) : null
   }
 
+  public listByTruckId(truckId: string): TripRecord[] {
+    const rows = this.database
+      .prepare('SELECT * FROM trips WHERE truck_id = ? ORDER BY started_at DESC')
+      .all(truckId) as Record<string, unknown>[]
+
+    return rows.map(mapTripRow)
+  }
+
   public create(input: NewTripRecord): TripRecord {
     const createdAt = isoNow()
     const updatedAt = createdAt

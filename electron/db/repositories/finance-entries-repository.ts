@@ -42,6 +42,16 @@ export class FinanceEntriesRepository {
     return row ? mapFinanceEntryRow(row) : null
   }
 
+  public listByTruckId(truckId: string): FinanceEntryRecord[] {
+    const rows = this.database
+      .prepare(
+        'SELECT * FROM finance_entries WHERE truck_id = ? ORDER BY occurred_at DESC',
+      )
+      .all(truckId) as Record<string, unknown>[]
+
+    return rows.map(mapFinanceEntryRow)
+  }
+
   public create(input: NewFinanceEntryRecord): FinanceEntryRecord {
     const id = input.id || randomUUID()
 

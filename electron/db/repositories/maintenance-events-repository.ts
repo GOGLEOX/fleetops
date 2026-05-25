@@ -44,6 +44,16 @@ export class MaintenanceEventsRepository {
     return row ? mapMaintenanceEventRow(row) : null
   }
 
+  public listByTruckId(truckId: string): MaintenanceEventRecord[] {
+    const rows = this.database
+      .prepare(
+        'SELECT * FROM maintenance_events WHERE truck_id = ? ORDER BY performed_at DESC',
+      )
+      .all(truckId) as Record<string, unknown>[]
+
+    return rows.map(mapMaintenanceEventRow)
+  }
+
   public create(input: NewMaintenanceEventRecord): MaintenanceEventRecord {
     const id = input.id || randomUUID()
 

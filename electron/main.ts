@@ -10,6 +10,7 @@ import {
   closeSessionTrackingService,
   initializeSessionTrackingService,
 } from './session/app-session'
+import { initializeFleetService } from './fleet/app-fleet'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -45,6 +46,7 @@ app.whenReady().then(async () => {
   const database = initializeAppDatabase()
   const telemetryService = await initializeTelemetryService()
   const sessionTrackingService = await initializeSessionTrackingService()
+  const fleetService = initializeFleetService()
 
   ipcMain.handle('fleetops:get-database-health', () => database.getHealth())
   ipcMain.handle('fleetops:get-telemetry-snapshot', () =>
@@ -64,6 +66,34 @@ app.whenReady().then(async () => {
   )
   ipcMain.handle('fleetops:defer-pending-truck', (_, truckId: string) =>
     sessionTrackingService.deferPendingTruck(truckId),
+  )
+  ipcMain.handle('fleetops:get-fleet-snapshot', () => fleetService.getSnapshot())
+  ipcMain.handle('fleetops:get-truck-detail', (_, truckId: string) =>
+    fleetService.getTruckDetail(truckId),
+  )
+  ipcMain.handle(
+    'fleetops:register-detected-truck',
+    (_, input: {
+      truckId: string
+      displayName: string
+      detectedMake: string | null
+      detectedModel: string | null
+      startingOdometerMi: number | null
+      notes: string | null
+    }) => fleetService.registerDetectedTruck(input),
+  )
+  ipcMain.handle(
+    'fleetops:update-truck',
+    (_, input: {
+      truckId: string
+      displayName: string
+      detectedMake: string | null
+      detectedModel: string | null
+      startingOdometerMi: number | null
+      currentOdometerMi: number | null
+      notes: string | null
+      status: 'active' | 'parked' | 'maintenance' | 'retired' | 'pending' | 'ignored'
+    }) => fleetService.updateTruck(input),
   )
 
   telemetryService.subscribeState((snapshot) => {

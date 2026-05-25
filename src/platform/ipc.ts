@@ -1,5 +1,11 @@
 import type { DatabaseHealth } from '../lib/persistence/contracts'
 import type {
+  FleetSnapshot,
+  FleetTruckDetail,
+  RegisterDetectedTruckInput,
+  UpdateTruckInput,
+} from '../lib/fleet/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -122,4 +128,42 @@ export function onSessionState(
   }
 
   return window.fleetops.onSessionState(callback)
+}
+
+export async function getFleetSnapshot(): Promise<FleetSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getFleetSnapshot()
+}
+
+export async function getTruckDetail(
+  truckId: string,
+): Promise<FleetTruckDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getTruckDetail(truckId)
+}
+
+export async function registerDetectedTruck(
+  input: RegisterDetectedTruckInput,
+): Promise<FleetTruckDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.registerDetectedTruck(input)
+}
+
+export async function updateTruck(
+  input: UpdateTruckInput,
+): Promise<FleetTruckDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.updateTruck(input)
 }

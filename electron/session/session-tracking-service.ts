@@ -6,6 +6,7 @@ import type {
   TripRecord,
   TruckRecord,
 } from '../../src/lib/persistence/contracts'
+import type { RegisterDetectedTruckInput } from '../../src/lib/fleet/contracts'
 import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
@@ -123,33 +124,90 @@ export class SessionTrackingService {
   }
 
   public async registerPendingTruck(truckId: string): Promise<SessionTrackingSnapshot> {
-    const truck = this.repositories.trucks.get(truckId)
+    return this.registerPendingTruckWithDetails({
+      truckId,
+      displayName: '',
+      detectedMake: null,
+      detectedModel: null,
+      startingOdometerMi: null,
+      notes: null,
+    })
+  }
+
+  public async registerPendingTruckWithDetails(
+    input: RegisterDetectedTruckInput,
+  ): Promise<SessionTrackingSnapshot> {
+    const truck = this.repositories.trucks.get(input.truckId)
     if (!truck || truck.status !== 'pending') {
       return this.getSnapshot()
     }
 
-    this.context.activeTruck = this.repositories.trucks.update(truckId, {
+    const displayName =
+      input.displayName.trim() ||
+      (truck.detectedMake && truck.detectedModel
+        ? `${truck.detectedMake} ${truck.detectedModel}`
+        : truck.displayName)
+
+    this.context.activeTruck = this.repositories.trucks.update(input.truckId, {
       id: truck.id,
-      displayName:
-        truck.detectedMake && truck.detectedModel
-          ? `${truck.detectedMake} ${truck.detectedModel}`
-          : truck.displayName,
-      detectedMake: truck.detectedMake,
-      detectedModel: truck.detectedModel,
+      displayName,
+      detectedMake: input.detectedMake ?? truck.detectedMake,
+      detectedModel: input.detectedModel ?? truck.detectedModel,
       detectedConfigHash: truck.detectedConfigHash,
       vinHash: truck.vinHash,
       firstSeenAt: truck.firstSeenAt,
       lastSeenAt: truck.lastSeenAt,
-      startingOdometerMi: truck.startingOdometerMi,
+      startingOdometerMi: input.startingOdometerMi ?? truck.startingOdometerMi,
       currentOdometerMi: truck.currentOdometerMi,
       engineHours: truck.engineHours,
       idleHours: truck.idleHours,
       fuelUsedGal: truck.fuelUsedGal,
       status: 'active',
-      notes: truck.notes,
+      notes: input.notes ?? truck.notes,
     })
-    this.context.dismissedPromptTruckId = truckId
+    this.context.dismissedPromptTruckId = input.truckId
     this.context.lastDecisionNote = 'New truck registered.'
+    this.emitState()
+    return this.getSnapshot()
+  }
+
+  public async updateTruckDetails(input: {
+    truckId: string
+    displayName: string
+    detectedMake: string | null
+    detectedModel: string | null
+    startingOdometerMi: number | null
+    currentOdometerMi: number | null
+    notes: string | null
+    status: TruckRecord['status']
+  }): Promise<SessionTrackingSnapshot> {
+    const truck = this.repositories.trucks.get(input.truckId)
+    if (!truck) {
+      return this.getSnapshot()
+    }
+
+    const updatedTruck = this.repositories.trucks.update(input.truckId, {
+      id: truck.id,
+      displayName: input.displayName.trim() || truck.displayName,
+      detectedMake: input.detectedMake ?? truck.detectedMake,
+      detectedModel: input.detectedModel ?? truck.detectedModel,
+      detectedConfigHash: truck.detectedConfigHash,
+      vinHash: truck.vinHash,
+      firstSeenAt: truck.firstSeenAt,
+      lastSeenAt: truck.lastSeenAt,
+      startingOdometerMi: input.startingOdometerMi,
+      currentOdometerMi: input.currentOdometerMi,
+      engineHours: truck.engineHours,
+      idleHours: truck.idleHours,
+      fuelUsedGal: truck.fuelUsedGal,
+      status: input.status,
+      notes: input.notes,
+    })
+
+    if (this.context.activeTruck?.id === input.truckId) {
+      this.context.activeTruck = updatedTruck
+    }
+    this.context.lastDecisionNote = 'Truck details updated.'
     this.emitState()
     return this.getSnapshot()
   }

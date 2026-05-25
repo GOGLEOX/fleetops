@@ -42,6 +42,16 @@ export class FuelEventsRepository {
     return row ? mapFuelEventRow(row) : null
   }
 
+  public listByTruckId(truckId: string): FuelEventRecord[] {
+    const rows = this.database
+      .prepare(
+        'SELECT * FROM fuel_events WHERE truck_id = ? ORDER BY occurred_at DESC',
+      )
+      .all(truckId) as Record<string, unknown>[]
+
+    return rows.map(mapFuelEventRow)
+  }
+
   public create(input: NewFuelEventRecord): FuelEventRecord {
     const id = input.id || randomUUID()
 
