@@ -24,6 +24,11 @@ import type {
   FinanceSnapshot,
 } from '../lib/finance/contracts'
 import type {
+  GeneratedReport,
+  ReportGenerateInput,
+  ReportsSnapshot,
+} from '../lib/reports/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -296,4 +301,43 @@ export async function deleteFinanceEntry(entryId: string): Promise<boolean> {
   }
 
   return window.fleetops.deleteFinanceEntry(entryId)
+}
+
+export async function getReportsSnapshot(): Promise<ReportsSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getReportsSnapshot()
+}
+
+export async function generateReport(
+  input: ReportGenerateInput,
+): Promise<GeneratedReport | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.generateReport(input)
+}
+
+export async function getSavedReport(
+  reportId: string,
+): Promise<GeneratedReport | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getSavedReport(reportId)
+}
+
+export async function exportReport(
+  reportId: string,
+  format: 'html' | 'pdf',
+): Promise<boolean> {
+  if (!window.fleetops) {
+    return false
+  }
+
+  return window.fleetops.exportReport(reportId, format)
 }

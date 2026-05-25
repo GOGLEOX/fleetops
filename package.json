@@ -18,7 +18,8 @@
     "session:smoke": "node scripts/run-db-task.mjs session",
     "garage:smoke": "node scripts/run-db-task.mjs garage",
     "maintenance:smoke": "node scripts/run-db-task.mjs maintenance",
-    "finance:smoke": "node scripts/run-db-task.mjs finance"
+    "finance:smoke": "node scripts/run-db-task.mjs finance",
+    "reports:smoke": "node scripts/run-db-task.mjs reports"
   },
   "dependencies": {
     "better-sqlite3": "^12.4.1",

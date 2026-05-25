@@ -27,6 +27,11 @@ import type {
   FinanceSnapshot,
 } from './lib/finance/contracts'
 import type {
+  GeneratedReport,
+  ReportGenerateInput,
+  ReportsSnapshot,
+} from './lib/reports/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -75,6 +80,12 @@ declare global {
       input: FinanceEntryInput,
     ) => Promise<FinanceEntryRecord | null>
     deleteFinanceEntry: (entryId: string) => Promise<boolean>
+    getReportsSnapshot: () => Promise<ReportsSnapshot>
+    generateReport: (
+      input: ReportGenerateInput,
+    ) => Promise<GeneratedReport | null>
+    getSavedReport: (reportId: string) => Promise<GeneratedReport | null>
+    exportReport: (reportId: string, format: 'html' | 'pdf') => Promise<boolean>
     onTelemetryState: (
       callback: (snapshot: TelemetryServiceSnapshot) => void,
     ) => () => void

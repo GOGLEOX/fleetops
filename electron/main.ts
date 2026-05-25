@@ -14,6 +14,7 @@ import { initializeFleetService } from './fleet/app-fleet'
 import { initializeGarageService } from './garages/app-garages'
 import { initializeMaintenanceService } from './maintenance/app-maintenance'
 import { initializeFinanceService } from './finance/app-finance'
+import { initializeReportsService } from './reports/app-reports'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -53,6 +54,7 @@ app.whenReady().then(async () => {
   const garageService = initializeGarageService()
   const maintenanceService = initializeMaintenanceService()
   const financeService = initializeFinanceService()
+  const reportsService = initializeReportsService()
 
   ipcMain.handle('fleetops:get-database-health', () => database.getHealth())
   ipcMain.handle('fleetops:get-telemetry-snapshot', () =>
@@ -189,6 +191,34 @@ app.whenReady().then(async () => {
   )
   ipcMain.handle('fleetops:delete-finance-entry', (_, entryId: string) =>
     financeService.deleteEntry(entryId),
+  )
+  ipcMain.handle('fleetops:get-reports-snapshot', () =>
+    reportsService.getSnapshot(),
+  )
+  ipcMain.handle(
+    'fleetops:generate-report',
+    (_, input: {
+      type:
+        | 'trip_sheet'
+        | 'driver_session_summary'
+        | 'truck_maintenance_summary'
+        | 'fleet_profitability_report'
+        | 'garage_operations_report'
+        | 'monthly_carrier_snapshot'
+      tripId?: string
+      sessionId?: string
+      truckId?: string
+      garageId?: string
+      month?: string
+    }) => reportsService.generateReport(input),
+  )
+  ipcMain.handle('fleetops:get-saved-report', (_, reportId: string) =>
+    reportsService.getGeneratedReport(reportId),
+  )
+  ipcMain.handle(
+    'fleetops:export-report',
+    (_, reportId: string, format: 'html' | 'pdf') =>
+      reportsService.exportReport(reportId, format),
   )
 
   telemetryService.subscribeState((snapshot) => {

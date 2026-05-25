@@ -108,6 +108,7 @@ export function calculateProfitabilityRows(
       revenueCents: number
       expensesCents: number
       miles: number
+      tripIds: Set<string>
     }
   >()
 
@@ -121,6 +122,7 @@ export function calculateProfitabilityRows(
       revenueCents: 0,
       expensesCents: 0,
       miles: 0,
+      tripIds: new Set<string>(),
     }
 
     if (entry.category === 'revenue') {
@@ -129,8 +131,9 @@ export function calculateProfitabilityRows(
       current.expensesCents += Math.abs(Math.min(entry.amountCents, 0))
     }
 
-    if (trip?.id) {
+    if (trip?.id && !current.tripIds.has(trip.id)) {
       current.miles += tripMilesById.get(trip.id) ?? 0
+      current.tripIds.add(trip.id)
     }
 
     grouped.set(id, current)

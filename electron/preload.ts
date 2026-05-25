@@ -45,6 +45,11 @@ contextBridge.exposeInMainWorld('fleetops', {
     ipcRenderer.invoke('fleetops:save-finance-entry', input),
   deleteFinanceEntry: (entryId: string) =>
     ipcRenderer.invoke('fleetops:delete-finance-entry', entryId),
+  getReportsSnapshot: () => ipcRenderer.invoke('fleetops:get-reports-snapshot'),
+  generateReport: (input: unknown) => ipcRenderer.invoke('fleetops:generate-report', input),
+  getSavedReport: (reportId: string) => ipcRenderer.invoke('fleetops:get-saved-report', reportId),
+  exportReport: (reportId: string, format: 'html' | 'pdf') =>
+    ipcRenderer.invoke('fleetops:export-report', reportId, format),
   onTelemetryState: (callback: (snapshot: unknown) => void) => {
     const listener = (_event: unknown, snapshot: unknown) => {
       callback(snapshot)
