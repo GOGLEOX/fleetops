@@ -234,7 +234,7 @@ function buildGarageAnalytics(input: {
     0,
   )
   const revenueFromFinance = input.financeEntries
-    .filter((entry) => entry.category === 'trip_revenue')
+    .filter((entry) => entry.category === 'revenue')
     .reduce((sum, entry) => sum + Math.max(entry.amountCents, 0), 0)
   const revenueCents = Math.max(revenueFromTrips, revenueFromFinance)
 

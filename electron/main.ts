@@ -13,6 +13,7 @@ import {
 import { initializeFleetService } from './fleet/app-fleet'
 import { initializeGarageService } from './garages/app-garages'
 import { initializeMaintenanceService } from './maintenance/app-maintenance'
+import { initializeFinanceService } from './finance/app-finance'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -51,6 +52,7 @@ app.whenReady().then(async () => {
   const fleetService = initializeFleetService()
   const garageService = initializeGarageService()
   const maintenanceService = initializeMaintenanceService()
+  const financeService = initializeFinanceService()
 
   ipcMain.handle('fleetops:get-database-health', () => database.getHealth())
   ipcMain.handle('fleetops:get-telemetry-snapshot', () =>
@@ -158,6 +160,35 @@ app.whenReady().then(async () => {
       costCents: number | null
       notes: string | null
     }) => maintenanceService.logMaintenanceEvent(input),
+  )
+  ipcMain.handle('fleetops:get-finance-snapshot', () =>
+    financeService.getSnapshot(),
+  )
+  ipcMain.handle(
+    'fleetops:save-finance-entry',
+    (_, input: {
+      entryId?: string
+      tripId: string | null
+      truckId: string | null
+      garageId: string | null
+      occurredAt: string
+      category:
+        | 'revenue'
+        | 'fuel'
+        | 'maintenance'
+        | 'repair'
+        | 'insurance'
+        | 'loan'
+        | 'garage'
+        | 'toll'
+        | 'ticket'
+        | 'other'
+      amountCents: number
+      description: string
+    }) => financeService.saveEntry(input),
+  )
+  ipcMain.handle('fleetops:delete-finance-entry', (_, entryId: string) =>
+    financeService.deleteEntry(entryId),
   )
 
   telemetryService.subscribeState((snapshot) => {

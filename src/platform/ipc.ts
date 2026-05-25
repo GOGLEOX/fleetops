@@ -18,7 +18,11 @@ import type {
   MaintenanceSnapshot,
   TruckMaintenanceDetail,
 } from '../lib/maintenance/contracts'
-import type { MaintenanceRuleRecord } from '../lib/persistence/contracts'
+import type { FinanceEntryRecord, MaintenanceRuleRecord } from '../lib/persistence/contracts'
+import type {
+  FinanceEntryInput,
+  FinanceSnapshot,
+} from '../lib/finance/contracts'
 import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
@@ -266,4 +270,30 @@ export async function logMaintenanceEvent(
   }
 
   return window.fleetops.logMaintenanceEvent(input)
+}
+
+export async function getFinanceSnapshot(): Promise<FinanceSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getFinanceSnapshot()
+}
+
+export async function saveFinanceEntry(
+  input: FinanceEntryInput,
+): Promise<FinanceEntryRecord | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.saveFinanceEntry(input)
+}
+
+export async function deleteFinanceEntry(entryId: string): Promise<boolean> {
+  if (!window.fleetops) {
+    return false
+  }
+
+  return window.fleetops.deleteFinanceEntry(entryId)
 }

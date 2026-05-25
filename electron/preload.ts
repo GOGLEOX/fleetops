@@ -40,6 +40,11 @@ contextBridge.exposeInMainWorld('fleetops', {
     ipcRenderer.invoke('fleetops:save-maintenance-rule', input),
   logMaintenanceEvent: (input: unknown) =>
     ipcRenderer.invoke('fleetops:log-maintenance-event', input),
+  getFinanceSnapshot: () => ipcRenderer.invoke('fleetops:get-finance-snapshot'),
+  saveFinanceEntry: (input: unknown) =>
+    ipcRenderer.invoke('fleetops:save-finance-entry', input),
+  deleteFinanceEntry: (entryId: string) =>
+    ipcRenderer.invoke('fleetops:delete-finance-entry', entryId),
   onTelemetryState: (callback: (snapshot: unknown) => void) => {
     const listener = (_event: unknown, snapshot: unknown) => {
       callback(snapshot)

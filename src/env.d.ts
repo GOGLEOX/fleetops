@@ -18,7 +18,14 @@ import type {
   MaintenanceSnapshot,
   TruckMaintenanceDetail,
 } from './lib/maintenance/contracts'
-import type { MaintenanceRuleRecord } from './lib/persistence/contracts'
+import type {
+  FinanceEntryRecord,
+  MaintenanceRuleRecord,
+} from './lib/persistence/contracts'
+import type {
+  FinanceEntryInput,
+  FinanceSnapshot,
+} from './lib/finance/contracts'
 import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
@@ -63,6 +70,11 @@ declare global {
     logMaintenanceEvent: (
       input: MaintenanceEventInput,
     ) => Promise<TruckMaintenanceDetail | null>
+    getFinanceSnapshot: () => Promise<FinanceSnapshot>
+    saveFinanceEntry: (
+      input: FinanceEntryInput,
+    ) => Promise<FinanceEntryRecord | null>
+    deleteFinanceEntry: (entryId: string) => Promise<boolean>
     onTelemetryState: (
       callback: (snapshot: TelemetryServiceSnapshot) => void,
     ) => () => void

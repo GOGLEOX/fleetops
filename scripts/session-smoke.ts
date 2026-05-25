@@ -59,12 +59,19 @@ const trips = database.repositories.trips.list()
 const trucks = database.repositories.trucks.list()
 const fuelEvents = database.repositories.fuelEvents.list()
 const sessions = database.repositories.sessionRecords.list()
+const financeEntries = database.repositories.financeEntries.list()
 
 assert.equal(trips.length > 0, true)
 assert.equal(trucks.length > 0, true)
 assert.equal(fuelEvents.length > 0, true)
 assert.equal(sessions.length > 0, true)
 assert.equal(trips[0]?.status, 'completed')
+assert.equal(
+  financeEntries.some(
+    (entry) => entry.tripId === trips[0]?.id && entry.category === 'revenue',
+  ),
+  true,
+)
 
 console.log(
   JSON.stringify(
@@ -73,6 +80,9 @@ console.log(
       truck: trucks[0],
       fuelEvent: fuelEvents[0],
       session: sessions[0],
+      revenueEntry: financeEntries.find(
+        (entry) => entry.tripId === trips[0]?.id && entry.category === 'revenue',
+      ),
     },
     null,
     2,

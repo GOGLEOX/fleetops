@@ -68,7 +68,7 @@ const financeEntry = database.repositories.financeEntries.create({
   truckId: truck.id,
   garageId: garage.id,
   occurredAt: '2026-01-02T08:05:00.000Z',
-  category: 'trip_revenue',
+  category: 'revenue',
   amountCents: 125000,
   description: 'Completed delivery',
   source: 'manual',

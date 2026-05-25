@@ -575,12 +575,17 @@ export class SessionTrackingService {
     })
 
     if (closedTrip?.revenueCents != null) {
+      const hasRevenueEntry = this.repositories.financeEntries
+        .listByTripId(closedTrip.id)
+        .some((entry) => entry.category === 'revenue')
+
+      if (!hasRevenueEntry) {
       const financeEntry: NewFinanceEntryRecord = {
         tripId: closedTrip.id,
         truckId: closedTrip.truckId,
         garageId: closedTrip.garageId,
         occurredAt: closedTrip.endedAt ?? closedTrip.updatedAt,
-        category: 'trip_revenue',
+        category: 'revenue',
         amountCents: closedTrip.revenueCents,
         description: closedTrip.cargoName
           ? `Trip revenue: ${closedTrip.cargoName}`
@@ -588,6 +593,7 @@ export class SessionTrackingService {
         source,
       }
       this.repositories.financeEntries.create(financeEntry)
+      }
     }
 
     this.context.activeTrip = null

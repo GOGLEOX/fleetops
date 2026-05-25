@@ -198,4 +198,12 @@ export const migrations: MigrationDefinition[] = [
         ON truck_garage_assignments(truck_id);
     `,
   },
+  {
+    id: '004_finance_category_normalization',
+    sql: `
+      UPDATE finance_entries
+      SET category = 'revenue'
+      WHERE category = 'trip_revenue';
+    `,
+  },
 ]
