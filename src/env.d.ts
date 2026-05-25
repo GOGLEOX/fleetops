@@ -4,6 +4,7 @@ import type {
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
 } from './lib/telemetry/contracts'
+import type { SessionTrackingSnapshot } from './lib/session/contracts'
 
 declare global {
   interface FleetOpsDesktopApi {
@@ -13,6 +14,10 @@ declare global {
     setMockTelemetryEnabled: (
       enabled: boolean,
     ) => Promise<TelemetryServiceSnapshot>
+    getSessionSnapshot: () => Promise<SessionTrackingSnapshot>
+    registerPendingTruck: (truckId: string) => Promise<SessionTrackingSnapshot>
+    ignorePendingTruck: (truckId: string) => Promise<SessionTrackingSnapshot>
+    deferPendingTruck: (truckId: string) => Promise<SessionTrackingSnapshot>
     onTelemetryState: (
       callback: (snapshot: TelemetryServiceSnapshot) => void,
     ) => () => void
@@ -21,6 +26,9 @@ declare global {
     ) => () => void
     onTelemetryEvent: (
       callback: (event: NormalizedTelemetryEvent) => void,
+    ) => () => void
+    onSessionState: (
+      callback: (snapshot: SessionTrackingSnapshot) => void,
     ) => () => void
   }
 

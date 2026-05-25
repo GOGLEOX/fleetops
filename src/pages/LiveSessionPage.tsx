@@ -1,7 +1,13 @@
-import { useTelemetry } from '../hooks/useTelemetry'
+import { useSessionTracking } from '../hooks/useSessionTracking'
 
 export function LiveSessionPage() {
-  const { snapshot, latestFrame, events } = useTelemetry()
+  const {
+    snapshot,
+    registerPendingTruck,
+    ignorePendingTruck,
+    deferPendingTruck,
+  } = useSessionTracking()
+  const frame = snapshot?.latestFrame
 
   return (
     <section className="rounded-3xl border border-stone-800 bg-[linear-gradient(180deg,_rgba(30,33,36,0.98)_0%,_rgba(16,18,20,0.98)_100%)] shadow-[0_32px_90px_rgba(0,0,0,0.28)]">
@@ -10,128 +16,146 @@ export function LiveSessionPage() {
           Live Session
         </p>
         <h3 className="mt-2 text-xl font-semibold text-stone-100">
-          Current drive intake
+          Active operational session
         </h3>
         <p className="mt-2 text-sm leading-6 text-stone-400">
-          This page reads normalized telemetry frames from the active provider
-          without binding the renderer to a specific bridge implementation.
+          Session tracking converts normalized telemetry into conservative trip,
+          truck, fuel, and idle records without pretending certainty where the
+          bridge cannot provide it.
         </p>
       </div>
 
       <div className="grid gap-4 px-5 py-5 lg:grid-cols-[minmax(0,1.35fr)_340px] lg:px-6 lg:py-6">
         <div className="grid gap-4">
-          <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
-                  Connection state
-                </p>
-                <p className="mt-2 text-sm text-stone-200">
-                  {snapshot?.status ?? 'disconnected'}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
-                  Provider
-                </p>
-                <p className="mt-2 text-sm text-stone-300">
-                  {snapshot?.providerId ?? '--'}
-                </p>
-              </div>
-            </div>
-            {snapshot?.lastError ? (
-              <p className="mt-4 text-sm leading-6 text-red-300">
-                {snapshot.lastError}
+          {snapshot?.newTruckPrompt ? (
+            <section className="rounded-2xl border border-amber-700/50 bg-amber-500/8 p-5">
+              <p className="text-xs uppercase tracking-[0.28em] text-amber-300">
+                New truck detected
               </p>
-            ) : null}
+              <p className="mt-2 text-sm text-stone-100">
+                {snapshot.newTruckPrompt.detectedMake ?? 'Unknown make'}{' '}
+                {snapshot.newTruckPrompt.detectedModel ?? 'Unknown model'}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-stone-400">
+                FleetOps created a pending detected truck record from telemetry.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <ActionButton
+                  label="Register"
+                  onClick={() =>
+                    void registerPendingTruck(snapshot.newTruckPrompt!.truckId)
+                  }
+                />
+                <ActionButton
+                  label="Ignore"
+                  onClick={() =>
+                    void ignorePendingTruck(snapshot.newTruckPrompt!.truckId)
+                  }
+                  tone="secondary"
+                />
+                <ActionButton
+                  label="Later"
+                  onClick={() =>
+                    void deferPendingTruck(snapshot.newTruckPrompt!.truckId)
+                  }
+                  tone="secondary"
+                />
+              </div>
+            </section>
+          ) : null}
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Session"
+              value={snapshot?.sessionState ?? 'idle'}
+            />
+            <MetricCard
+              label="Trip"
+              value={snapshot?.activeTrip ? snapshot.activeTrip.status : '--'}
+            />
+            <MetricCard
+              label="Fuel used"
+              value={
+                snapshot?.activeSession
+                  ? `${snapshot.activeSession.fuelUsedGal.toFixed(2)} gal`
+                  : '--'
+              }
+            />
+            <MetricCard
+              label="Idle"
+              value={
+                snapshot?.activeSession
+                  ? `${snapshot.activeSession.idleMinutes.toFixed(1)} min`
+                  : '--'
+              }
+            />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Truck"
+              value={snapshot?.activeTruck?.displayName ?? '--'}
+            />
+            <MetricCard
+              label="Distance"
               value={
-                latestFrame?.truckMake && latestFrame?.truckModel
-                  ? `${latestFrame.truckMake} ${latestFrame.truckModel}`
+                snapshot?.activeSession
+                  ? `${snapshot.activeSession.distanceMi.toFixed(2)} mi`
+                  : '--'
+              }
+            />
+            <MetricCard
+              label="Fuel tank"
+              value={
+                frame?.fuelLiters != null
+                  ? `${frame.fuelLiters.toFixed(1)} L`
                   : '--'
               }
             />
             <MetricCard
               label="Speed"
               value={
-                latestFrame?.speedKph != null
-                  ? `${latestFrame.speedKph.toFixed(0)} kph`
-                  : '--'
-              }
-            />
-            <MetricCard
-              label="Fuel"
-              value={
-                latestFrame?.fuelLiters != null
-                  ? `${latestFrame.fuelLiters.toFixed(1)} L`
-                  : '--'
-              }
-            />
-            <MetricCard
-              label="Route left"
-              value={
-                latestFrame?.navigationDistanceKm != null
-                  ? `${latestFrame.navigationDistanceKm.toFixed(1)} km`
-                  : '--'
+                frame?.speedKph != null ? `${frame.speedKph.toFixed(0)} kph` : '--'
               }
             />
           </div>
 
           <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-5">
             <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
-              Frame details
+              Active trip
             </p>
             <dl className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              <DetailRow label="Game" value={latestFrame?.game ?? '--'} />
-              <DetailRow
-                label="Paused"
-                value={latestFrame ? (latestFrame.paused ? 'Yes' : 'No') : '--'}
-              />
-              <DetailRow
-                label="Odometer"
-                value={
-                  latestFrame?.odometerKm != null
-                    ? `${latestFrame.odometerKm.toFixed(1)} km`
-                    : '--'
-                }
-              />
-              <DetailRow
-                label="Engine"
-                value={
-                  latestFrame?.engineOn != null
-                    ? latestFrame.engineOn
-                      ? 'Running'
-                      : 'Off'
-                    : '--'
-                }
-              />
-              <DetailRow
-                label="RPM"
-                value={
-                  latestFrame?.engineRpm != null
-                    ? latestFrame.engineRpm.toFixed(0)
-                    : '--'
-                }
-              />
-              <DetailRow
-                label="Gear"
-                value={latestFrame?.gear != null ? String(latestFrame.gear) : '--'}
-              />
               <DetailRow
                 label="Cargo"
-                value={latestFrame?.cargoName ?? '--'}
+                value={snapshot?.activeTrip?.cargoName ?? '--'}
               />
               <DetailRow
                 label="Origin"
-                value={latestFrame?.originCity ?? '--'}
+                value={snapshot?.activeTrip?.originCity ?? '--'}
               />
               <DetailRow
                 label="Destination"
-                value={latestFrame?.destinationCity ?? '--'}
+                value={snapshot?.activeTrip?.destinationCity ?? '--'}
+              />
+              <DetailRow
+                label="Revenue"
+                value={
+                  snapshot?.activeTrip?.revenueCents != null
+                    ? `$${(snapshot.activeTrip.revenueCents / 100).toFixed(2)}`
+                    : '--'
+                }
+              />
+              <DetailRow
+                label="Damage"
+                value={
+                  snapshot?.activeTrip?.damageEnd != null
+                    ? `${(snapshot.activeTrip.damageEnd * 100).toFixed(1)}%`
+                    : '--'
+                }
+              />
+              <DetailRow
+                label="Close mode"
+                value={snapshot?.inferredTrip ? 'Inferred' : 'Direct'}
               />
             </dl>
           </div>
@@ -140,40 +164,48 @@ export function LiveSessionPage() {
         <aside className="grid gap-4">
           <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-5">
             <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
-              Source mode
+              Session notes
             </p>
             <p className="mt-2 text-sm text-stone-200">
-              {snapshot?.mockMode ? 'Mock telemetry' : 'Live bridge placeholder'}
+              {snapshot?.lastDecisionNote ?? 'No operator action recorded.'}
             </p>
             <p className="mt-3 text-sm leading-6 text-stone-500">
-              The adapter layer keeps FleetOps independent from one specific SCS
-              telemetry library.
+              Missing job-end certainty falls back to conservative inferred trip
+              closure instead of fabricated certainty.
             </p>
           </div>
 
           <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-5">
             <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
-              Recent events
+              Latest refuel
             </p>
-            <div className="mt-4 grid gap-3">
-              {events.length > 0 ? (
-                events.map((event) => (
-                  <div
-                    key={`${event.timestamp}-${event.type}`}
-                    className="rounded-xl border border-stone-800 bg-stone-900/70 px-3 py-3"
-                  >
-                    <p className="text-sm text-stone-200">{event.type}</p>
-                    <p className="mt-1 text-xs text-stone-500">
-                      {new Date(event.timestamp).toLocaleTimeString()}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-xl border border-dashed border-stone-700 bg-stone-900/50 px-3 py-4 text-sm text-stone-500">
-                  No telemetry events have been received yet.
-                </div>
-              )}
-            </div>
+            {snapshot?.recentFuelEvent ? (
+              <div className="mt-3 rounded-xl border border-stone-800 bg-stone-900/70 px-3 py-3">
+                <p className="text-sm text-stone-200">
+                  {snapshot.recentFuelEvent.gallons.toFixed(2)} gal detected
+                </p>
+                <p className="mt-1 text-xs text-stone-500">
+                  {new Date(snapshot.recentFuelEvent.occurredAt).toLocaleTimeString()}
+                </p>
+              </div>
+            ) : (
+              <div className="mt-3 rounded-xl border border-dashed border-stone-700 bg-stone-900/50 px-3 py-4 text-sm text-stone-500">
+                No refuel event detected in this session.
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-5">
+            <p className="text-xs uppercase tracking-[0.28em] text-stone-500">
+              Telemetry state
+            </p>
+            <p className="mt-2 text-sm text-stone-200">
+              {snapshot?.telemetryStatus ?? 'disconnected'}
+            </p>
+            <p className="mt-3 text-sm leading-6 text-stone-500">
+              Active frame values are updated from the provider layer, while
+              persistent records are written by the session engine.
+            </p>
           </div>
         </aside>
       </div>
@@ -210,5 +242,32 @@ function DetailRow({ label, value }: DetailRowProps) {
       </dt>
       <dd className="mt-2 text-sm text-stone-200">{value}</dd>
     </div>
+  )
+}
+
+interface ActionButtonProps {
+  label: string
+  onClick: () => void
+  tone?: 'primary' | 'secondary'
+}
+
+function ActionButton({
+  label,
+  onClick,
+  tone = 'primary',
+}: ActionButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        'rounded-xl border px-4 py-2 text-sm transition-colors',
+        tone === 'primary'
+          ? 'border-amber-600 bg-amber-500/15 text-amber-100 hover:bg-amber-500/25'
+          : 'border-stone-700 bg-stone-900/70 text-stone-200 hover:bg-stone-800',
+      ].join(' ')}
+    >
+      {label}
+    </button>
   )
 }

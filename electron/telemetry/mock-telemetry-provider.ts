@@ -19,6 +19,7 @@ export class MockTelemetryProvider implements TelemetryProvider {
   private odometerKm = 245_120
   private navigationDistanceKm = 812
   private fuelLiters = 510
+  private tick = 0
 
   public async connect(): Promise<void> {
     if (this.status === 'connected') {
@@ -41,12 +42,36 @@ export class MockTelemetryProvider implements TelemetryProvider {
     })
 
     this.frameTimer = setInterval(() => {
-      const speedKph = 76 + Math.round(Math.sin(Date.now() / 4200) * 6)
-      const engineRpm = 1280 + Math.round(Math.cos(Date.now() / 2000) * 140)
+      this.tick += 1
+      const phase = this.getPhase()
+      const speedKph = phase.speedKph
+      const engineRpm = phase.engineOn
+        ? 1280 + Math.round(Math.cos(Date.now() / 2000) * 140)
+        : 0
 
-      this.odometerKm += 0.42
-      this.navigationDistanceKm = Math.max(0, this.navigationDistanceKm - 0.42)
-      this.fuelLiters = Math.max(0, this.fuelLiters - 0.09)
+      if (phase.speedKph > 1) {
+        this.odometerKm += 0.42
+      }
+
+      this.navigationDistanceKm = phase.jobActive
+        ? Math.max(0, this.navigationDistanceKm - (phase.speedKph > 1 ? 0.42 : 0))
+        : 0
+
+      if (phase.refuelLiters > 0) {
+        this.fuelLiters = Math.min(720, this.fuelLiters + phase.refuelLiters)
+      } else if (phase.engineOn) {
+        this.fuelLiters = Math.max(0, this.fuelLiters - phase.fuelBurnLiters)
+      }
+
+      if (phase.emitJobDelivered) {
+        this.emitEvent({
+          timestamp: isoNow(),
+          type: 'job.delivered',
+          payload: {
+            provider: 'mock',
+          },
+        })
+      }
 
       const frame: NormalizedTelemetryFrame = {
         timestamp: isoNow(),
@@ -61,19 +86,20 @@ export class MockTelemetryProvider implements TelemetryProvider {
         fuelLiters: Number(this.fuelLiters.toFixed(2)),
         fuelCapacityLiters: 720,
         engineRpm,
-        engineOn: true,
-        gear: 12,
-        damageTruck: 0.004,
+        engineOn: phase.engineOn,
+        gear: phase.speedKph > 1 ? 12 : 0,
+        damageTruck: phase.emitJobDelivered ? 0.012 : 0.004,
         damageTrailer: 0,
-        jobActive: true,
-        cargoName: 'Palletized groceries',
-        originCity: 'Casper',
-        destinationCity: 'Cheyenne',
-        income: 48200,
-        routeDistanceKm: 914,
+        jobActive: phase.jobActive,
+        cargoName: phase.jobActive ? 'Palletized groceries' : null,
+        originCity: phase.jobActive ? 'Casper' : null,
+        destinationCity: phase.jobActive ? 'Cheyenne' : null,
+        income: phase.jobActive || phase.emitJobDelivered ? 48200 : null,
+        routeDistanceKm: phase.jobActive ? 914 : null,
         navigationDistanceKm: Number(this.navigationDistanceKm.toFixed(2)),
         raw: {
           provider: 'mock',
+          tick: this.tick,
         },
       }
 
@@ -132,5 +158,67 @@ export class MockTelemetryProvider implements TelemetryProvider {
 
   private emitEvent(event: NormalizedTelemetryEvent) {
     this.events.emit(event)
+  }
+
+  private getPhase(): {
+    speedKph: number
+    engineOn: boolean
+    jobActive: boolean
+    fuelBurnLiters: number
+    refuelLiters: number
+    emitJobDelivered: boolean
+  } {
+    if (this.tick <= 2) {
+      return {
+        speedKph: 0,
+        engineOn: true,
+        jobActive: false,
+        fuelBurnLiters: 0.02,
+        refuelLiters: 0,
+        emitJobDelivered: false,
+      }
+    }
+
+    if (this.tick <= 8) {
+      return {
+        speedKph: 74 + Math.round(Math.sin(Date.now() / 4200) * 4),
+        engineOn: true,
+        jobActive: true,
+        fuelBurnLiters: 0.09,
+        refuelLiters: 0,
+        emitJobDelivered: false,
+      }
+    }
+
+    if (this.tick <= 10) {
+      return {
+        speedKph: 0,
+        engineOn: true,
+        jobActive: true,
+        fuelBurnLiters: 0.03,
+        refuelLiters: this.tick === 10 ? 120 : 0,
+        emitJobDelivered: false,
+      }
+    }
+
+    if (this.tick <= 14) {
+      return {
+        speedKph: 76,
+        engineOn: true,
+        jobActive: true,
+        fuelBurnLiters: 0.08,
+        refuelLiters: 0,
+        emitJobDelivered: false,
+      }
+    }
+
+    return {
+      speedKph: 0,
+      engineOn: true,
+      jobActive: false,
+      fuelBurnLiters: 0.02,
+      refuelLiters: 0,
+      emitJobDelivered: this.tick === 15,
+    }
   }
 }

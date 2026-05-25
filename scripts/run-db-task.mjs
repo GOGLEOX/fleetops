@@ -13,6 +13,7 @@ const taskScriptMap = {
   health: 'db-health.ts',
   seed: 'db-seed.ts',
   smoke: 'db-smoke.ts',
+  session: 'session-smoke.ts',
 }
 
 const taskScript = taskScriptMap[taskName]

@@ -5,6 +5,7 @@ import { GaragesRepository } from './garages-repository'
 import { MaintenanceEventsRepository } from './maintenance-events-repository'
 import { MaintenanceRulesRepository } from './maintenance-rules-repository'
 import { ReportsRepository } from './reports-repository'
+import { SessionRecordsRepository } from './session-records-repository'
 import { SettingsRepository } from './settings-repository'
 import { TripsRepository } from './trips-repository'
 import { TrucksRepository } from './trucks-repository'
@@ -19,6 +20,7 @@ export interface FleetOpsRepositories {
   maintenanceEvents: MaintenanceEventsRepository
   financeEntries: FinanceEntriesRepository
   reports: ReportsRepository
+  sessionRecords: SessionRecordsRepository
 }
 
 export function createRepositories(
@@ -34,5 +36,6 @@ export function createRepositories(
     maintenanceEvents: new MaintenanceEventsRepository(database),
     financeEntries: new FinanceEntriesRepository(database),
     reports: new ReportsRepository(database),
+    sessionRecords: new SessionRecordsRepository(database),
   }
 }

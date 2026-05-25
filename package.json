@@ -14,7 +14,8 @@
     "start": "electron .",
     "db:health": "node scripts/run-db-task.mjs health",
     "db:seed": "node scripts/run-db-task.mjs seed",
-    "db:smoke": "node scripts/run-db-task.mjs smoke"
+    "db:smoke": "node scripts/run-db-task.mjs smoke",
+    "session:smoke": "node scripts/run-db-task.mjs session"
   },
   "dependencies": {
     "better-sqlite3": "^12.4.1",

@@ -51,6 +51,31 @@ export class TrucksRepository {
     return row ? mapTruckRow(row) : null
   }
 
+  public findByTelemetrySignature(input: {
+    detectedMake: string | null
+    detectedModel: string | null
+    detectedConfigHash: string | null
+  }): TruckRecord | null {
+    const row = this.database
+      .prepare(
+        `
+          SELECT * FROM trucks
+          WHERE COALESCE(detected_config_hash, '') = COALESCE(?, '')
+            AND COALESCE(detected_make, '') = COALESCE(?, '')
+            AND COALESCE(detected_model, '') = COALESCE(?, '')
+          ORDER BY updated_at DESC
+          LIMIT 1
+        `,
+      )
+      .get(
+        input.detectedConfigHash,
+        input.detectedMake,
+        input.detectedModel,
+      ) as Record<string, unknown> | undefined
+
+    return row ? mapTruckRow(row) : null
+  }
+
   public create(input: NewTruckRecord): TruckRecord {
     const createdAt = isoNow()
     const updatedAt = createdAt

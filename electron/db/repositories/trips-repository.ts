@@ -53,6 +53,16 @@ export class TripsRepository {
     return row ? mapTripRow(row) : null
   }
 
+  public findActiveByTruckId(truckId: string): TripRecord | null {
+    const row = this.database
+      .prepare(
+        "SELECT * FROM trips WHERE truck_id = ? AND status = 'active' ORDER BY started_at DESC LIMIT 1",
+      )
+      .get(truckId) as Record<string, unknown> | undefined
+
+    return row ? mapTripRow(row) : null
+  }
+
   public create(input: NewTripRecord): TripRecord {
     const createdAt = isoNow()
     const updatedAt = createdAt

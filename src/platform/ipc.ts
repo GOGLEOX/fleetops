@@ -4,6 +4,7 @@ import type {
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
 } from '../lib/telemetry/contracts'
+import type { SessionTrackingSnapshot } from '../lib/session/contracts'
 
 export interface DesktopRuntimeInfo {
   version: string
@@ -73,4 +74,52 @@ export function onTelemetryEvent(
   }
 
   return window.fleetops.onTelemetryEvent(callback)
+}
+
+export async function getSessionSnapshot(): Promise<SessionTrackingSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getSessionSnapshot()
+}
+
+export async function registerPendingTruck(
+  truckId: string,
+): Promise<SessionTrackingSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.registerPendingTruck(truckId)
+}
+
+export async function ignorePendingTruck(
+  truckId: string,
+): Promise<SessionTrackingSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.ignorePendingTruck(truckId)
+}
+
+export async function deferPendingTruck(
+  truckId: string,
+): Promise<SessionTrackingSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.deferPendingTruck(truckId)
+}
+
+export function onSessionState(
+  callback: (snapshot: SessionTrackingSnapshot) => void,
+): (() => void) | null {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.onSessionState(callback)
 }

@@ -1,7 +1,14 @@
 export type RecordSource = 'telemetry' | 'manual' | 'inferred' | 'imported'
 
-export type TruckStatus = 'active' | 'parked' | 'maintenance' | 'retired'
+export type TruckStatus =
+  | 'active'
+  | 'parked'
+  | 'maintenance'
+  | 'retired'
+  | 'pending'
+  | 'ignored'
 export type TripStatus = 'draft' | 'active' | 'completed' | 'cancelled'
+export type SessionRecordStatus = 'active' | 'completed' | 'abandoned'
 export type FinanceCategory =
   | 'trip_revenue'
   | 'fuel'
@@ -134,6 +141,24 @@ export interface ReportRecord {
   payloadJson: string
 }
 
+export interface SessionRecord {
+  id: string
+  truckId: string | null
+  tripId: string | null
+  startedAt: string
+  endedAt: string | null
+  status: SessionRecordStatus
+  source: RecordSource
+  inferred: boolean
+  distanceMi: number
+  fuelUsedGal: number
+  idleMinutes: number
+  lastFrameAt: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export type NewTruckRecord = Omit<
   TruckRecord,
   'id' | 'createdAt' | 'updatedAt'
@@ -158,6 +183,10 @@ export type NewFinanceEntryRecord = Omit<FinanceEntryRecord, 'id'> & {
   id?: string
 }
 export type NewReportRecord = Omit<ReportRecord, 'id'> & { id?: string }
+export type NewSessionRecord = Omit<
+  SessionRecord,
+  'id' | 'createdAt' | 'updatedAt'
+> & { id?: string }
 
 export interface DatabaseAdapter {
   readonly id: string

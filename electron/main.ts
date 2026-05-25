@@ -6,12 +6,17 @@ import {
   closeTelemetryService,
   initializeTelemetryService,
 } from './telemetry/app-telemetry'
+import {
+  closeSessionTrackingService,
+  initializeSessionTrackingService,
+} from './session/app-session'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const TELEMETRY_STATE_CHANNEL = 'fleetops:telemetry-state'
 const TELEMETRY_FRAME_CHANNEL = 'fleetops:telemetry-frame'
 const TELEMETRY_EVENT_CHANNEL = 'fleetops:telemetry-event'
+const SESSION_STATE_CHANNEL = 'fleetops:session-state'
 
 function createWindow() {
   const window = new BrowserWindow({
@@ -39,6 +44,7 @@ function createWindow() {
 app.whenReady().then(async () => {
   const database = initializeAppDatabase()
   const telemetryService = await initializeTelemetryService()
+  const sessionTrackingService = await initializeSessionTrackingService()
 
   ipcMain.handle('fleetops:get-database-health', () => database.getHealth())
   ipcMain.handle('fleetops:get-telemetry-snapshot', () =>
@@ -46,6 +52,18 @@ app.whenReady().then(async () => {
   )
   ipcMain.handle('fleetops:set-mock-telemetry-enabled', (_, enabled: boolean) =>
     telemetryService.setMockMode(enabled),
+  )
+  ipcMain.handle('fleetops:get-session-snapshot', () =>
+    sessionTrackingService.getSnapshot(),
+  )
+  ipcMain.handle('fleetops:register-pending-truck', (_, truckId: string) =>
+    sessionTrackingService.registerPendingTruck(truckId),
+  )
+  ipcMain.handle('fleetops:ignore-pending-truck', (_, truckId: string) =>
+    sessionTrackingService.ignorePendingTruck(truckId),
+  )
+  ipcMain.handle('fleetops:defer-pending-truck', (_, truckId: string) =>
+    sessionTrackingService.deferPendingTruck(truckId),
   )
 
   telemetryService.subscribeState((snapshot) => {
@@ -66,6 +84,12 @@ app.whenReady().then(async () => {
     }
   })
 
+  sessionTrackingService.subscribeState((snapshot) => {
+    for (const window of BrowserWindow.getAllWindows()) {
+      window.webContents.send(SESSION_STATE_CHANNEL, snapshot)
+    }
+  })
+
   createWindow()
 
   app.on('activate', () => {
@@ -77,6 +101,7 @@ app.whenReady().then(async () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    void closeSessionTrackingService()
     void closeTelemetryService()
     closeAppDatabase()
     app.quit()
@@ -84,6 +109,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  void closeSessionTrackingService()
   void closeTelemetryService()
   closeAppDatabase()
 })

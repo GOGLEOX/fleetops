@@ -146,4 +146,35 @@ export const migrations: MigrationDefinition[] = [
       CREATE INDEX IF NOT EXISTS idx_finance_entries_garage_id ON finance_entries(garage_id);
     `,
   },
+  {
+    id: '002_session_records',
+    sql: `
+      CREATE TABLE IF NOT EXISTS session_records (
+        id TEXT PRIMARY KEY,
+        truck_id TEXT,
+        trip_id TEXT,
+        started_at TEXT NOT NULL,
+        ended_at TEXT,
+        status TEXT NOT NULL,
+        source TEXT NOT NULL,
+        inferred INTEGER NOT NULL,
+        distance_mi REAL NOT NULL,
+        fuel_used_gal REAL NOT NULL,
+        idle_minutes REAL NOT NULL,
+        last_frame_at TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (truck_id) REFERENCES trucks(id) ON DELETE SET NULL,
+        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE SET NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_session_records_status
+        ON session_records(status);
+      CREATE INDEX IF NOT EXISTS idx_session_records_truck_id
+        ON session_records(truck_id);
+      CREATE INDEX IF NOT EXISTS idx_session_records_trip_id
+        ON session_records(trip_id);
+    `,
+  },
 ]
