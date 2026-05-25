@@ -24,6 +24,14 @@ contextBridge.exposeInMainWorld('fleetops', {
   registerDetectedTruck: (input: unknown) =>
     ipcRenderer.invoke('fleetops:register-detected-truck', input),
   updateTruck: (input: unknown) => ipcRenderer.invoke('fleetops:update-truck', input),
+  getGarageSnapshot: () => ipcRenderer.invoke('fleetops:get-garage-snapshot'),
+  getGarageDetail: (garageId: string) =>
+    ipcRenderer.invoke('fleetops:get-garage-detail', garageId),
+  saveGarage: (input: unknown) => ipcRenderer.invoke('fleetops:save-garage', input),
+  assignTruckToGarage: (input: unknown) =>
+    ipcRenderer.invoke('fleetops:assign-truck-to-garage', input),
+  assignTripToGarage: (input: unknown) =>
+    ipcRenderer.invoke('fleetops:assign-trip-to-garage', input),
   onTelemetryState: (callback: (snapshot: unknown) => void) => {
     const listener = (_event: unknown, snapshot: unknown) => {
       callback(snapshot)

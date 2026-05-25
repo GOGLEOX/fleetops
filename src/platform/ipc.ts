@@ -6,6 +6,13 @@ import type {
   UpdateTruckInput,
 } from '../lib/fleet/contracts'
 import type {
+  AssignTripToGarageInput,
+  AssignTruckToGarageInput,
+  GarageDetail,
+  GarageSnapshot,
+  GarageUpsertInput,
+} from '../lib/garages/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -166,4 +173,52 @@ export async function updateTruck(
   }
 
   return window.fleetops.updateTruck(input)
+}
+
+export async function getGarageSnapshot(): Promise<GarageSnapshot | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getGarageSnapshot()
+}
+
+export async function getGarageDetail(
+  garageId: string,
+): Promise<GarageDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.getGarageDetail(garageId)
+}
+
+export async function saveGarage(
+  input: GarageUpsertInput,
+): Promise<GarageDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.saveGarage(input)
+}
+
+export async function assignTruckToGarage(
+  input: AssignTruckToGarageInput,
+): Promise<GarageDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.assignTruckToGarage(input)
+}
+
+export async function assignTripToGarage(
+  input: AssignTripToGarageInput,
+): Promise<GarageDetail | null> {
+  if (!window.fleetops) {
+    return null
+  }
+
+  return window.fleetops.assignTripToGarage(input)
 }

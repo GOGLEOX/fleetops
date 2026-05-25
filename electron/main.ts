@@ -11,6 +11,7 @@ import {
   initializeSessionTrackingService,
 } from './session/app-session'
 import { initializeFleetService } from './fleet/app-fleet'
+import { initializeGarageService } from './garages/app-garages'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -47,6 +48,7 @@ app.whenReady().then(async () => {
   const telemetryService = await initializeTelemetryService()
   const sessionTrackingService = await initializeSessionTrackingService()
   const fleetService = initializeFleetService()
+  const garageService = initializeGarageService()
 
   ipcMain.handle('fleetops:get-database-health', () => database.getHealth())
   ipcMain.handle('fleetops:get-telemetry-snapshot', () =>
@@ -94,6 +96,38 @@ app.whenReady().then(async () => {
       notes: string | null
       status: 'active' | 'parked' | 'maintenance' | 'retired' | 'pending' | 'ignored'
     }) => fleetService.updateTruck(input),
+  )
+  ipcMain.handle('fleetops:get-garage-snapshot', () =>
+    garageService.getSnapshot(),
+  )
+  ipcMain.handle('fleetops:get-garage-detail', (_, garageId: string) =>
+    garageService.getGarageDetail(garageId),
+  )
+  ipcMain.handle(
+    'fleetops:save-garage',
+    (_, input: {
+      garageId?: string
+      name: string
+      city: string
+      state: string
+      divisionName: string | null
+      notes: string | null
+    }) => garageService.saveGarage(input),
+  )
+  ipcMain.handle(
+    'fleetops:assign-truck-to-garage',
+    (_, input: {
+      truckId: string
+      garageId: string
+      notes: string | null
+    }) => garageService.assignTruck(input),
+  )
+  ipcMain.handle(
+    'fleetops:assign-trip-to-garage',
+    (_, input: {
+      tripId: string
+      garageId: string | null
+    }) => garageService.assignTrip(input),
   )
 
   telemetryService.subscribeState((snapshot) => {

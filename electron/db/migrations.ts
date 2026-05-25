@@ -177,4 +177,25 @@ export const migrations: MigrationDefinition[] = [
         ON session_records(trip_id);
     `,
   },
+  {
+    id: '003_truck_garage_assignments',
+    sql: `
+      CREATE TABLE IF NOT EXISTS truck_garage_assignments (
+        id TEXT PRIMARY KEY,
+        truck_id TEXT NOT NULL UNIQUE,
+        garage_id TEXT NOT NULL,
+        assigned_at TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (truck_id) REFERENCES trucks(id) ON DELETE CASCADE,
+        FOREIGN KEY (garage_id) REFERENCES garages(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_truck_garage_assignments_garage_id
+        ON truck_garage_assignments(garage_id);
+      CREATE INDEX IF NOT EXISTS idx_truck_garage_assignments_truck_id
+        ON truck_garage_assignments(truck_id);
+    `,
+  },
 ]

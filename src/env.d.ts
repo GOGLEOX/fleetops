@@ -6,6 +6,13 @@ import type {
   UpdateTruckInput,
 } from './lib/fleet/contracts'
 import type {
+  AssignTripToGarageInput,
+  AssignTruckToGarageInput,
+  GarageDetail,
+  GarageSnapshot,
+  GarageUpsertInput,
+} from './lib/garages/contracts'
+import type {
   NormalizedTelemetryEvent,
   NormalizedTelemetryFrame,
   TelemetryServiceSnapshot,
@@ -30,6 +37,15 @@ declare global {
       input: RegisterDetectedTruckInput,
     ) => Promise<FleetTruckDetail | null>
     updateTruck: (input: UpdateTruckInput) => Promise<FleetTruckDetail | null>
+    getGarageSnapshot: () => Promise<GarageSnapshot>
+    getGarageDetail: (garageId: string) => Promise<GarageDetail | null>
+    saveGarage: (input: GarageUpsertInput) => Promise<GarageDetail | null>
+    assignTruckToGarage: (
+      input: AssignTruckToGarageInput,
+    ) => Promise<GarageDetail | null>
+    assignTripToGarage: (
+      input: AssignTripToGarageInput,
+    ) => Promise<GarageDetail | null>
     onTelemetryState: (
       callback: (snapshot: TelemetryServiceSnapshot) => void,
     ) => () => void

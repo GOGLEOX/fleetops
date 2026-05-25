@@ -65,6 +65,16 @@ export interface GarageRecord {
   updatedAt: string
 }
 
+export interface TruckGarageAssignmentRecord {
+  id: string
+  truckId: string
+  garageId: string
+  assignedAt: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface TripRecord {
   id: string
   truckId: string
@@ -169,6 +179,10 @@ export type NewGarageRecord = Omit<
 > & { id?: string }
 export type NewTripRecord = Omit<
   TripRecord,
+  'id' | 'createdAt' | 'updatedAt'
+> & { id?: string }
+export type NewTruckGarageAssignmentRecord = Omit<
+  TruckGarageAssignmentRecord,
   'id' | 'createdAt' | 'updatedAt'
 > & { id?: string }
 export type NewFuelEventRecord = Omit<FuelEventRecord, 'id'> & { id?: string }

@@ -8,12 +8,14 @@ import { ReportsRepository } from './reports-repository'
 import { SessionRecordsRepository } from './session-records-repository'
 import { SettingsRepository } from './settings-repository'
 import { TripsRepository } from './trips-repository'
+import { TruckGarageAssignmentsRepository } from './truck-garage-assignments-repository'
 import { TrucksRepository } from './trucks-repository'
 
 export interface FleetOpsRepositories {
   settings: SettingsRepository
   trucks: TrucksRepository
   garages: GaragesRepository
+  truckGarageAssignments: TruckGarageAssignmentsRepository
   trips: TripsRepository
   fuelEvents: FuelEventsRepository
   maintenanceRules: MaintenanceRulesRepository
@@ -30,6 +32,7 @@ export function createRepositories(
     settings: new SettingsRepository(database),
     trucks: new TrucksRepository(database),
     garages: new GaragesRepository(database),
+    truckGarageAssignments: new TruckGarageAssignmentsRepository(database),
     trips: new TripsRepository(database),
     fuelEvents: new FuelEventsRepository(database),
     maintenanceRules: new MaintenanceRulesRepository(database),
